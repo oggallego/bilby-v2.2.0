@@ -8,7 +8,8 @@ from .utils import (lalsim_GetApproximantFromString,
                     lalsim_SimInspiralChooseFDWaveform,
                     lalsim_SimInspiralWaveformParamsInsertTidalLambda1,
                     lalsim_SimInspiralWaveformParamsInsertTidalLambda2,
-                    lalsim_SimInspiralChooseFDWaveformSequence)
+                    lalsim_SimInspiralChooseFDWaveformSequence,
+                    lalsim_SimInspiralWaveformParamsInsertZPHMLambdaG)
 
 
 def gwsignal_binary_black_hole(frequency_array, mass_1, mass_2, luminosity_distance, a_1, tilt_1,
@@ -571,7 +572,7 @@ def _base_lal_cbc_fd_waveform(
     iota, spin_1x, spin_1y, spin_1z, spin_2x, spin_2y, spin_2z = bilby_to_lalsimulation_spins(
         theta_jn=theta_jn, phi_jl=phi_jl, tilt_1=tilt_1, tilt_2=tilt_2,
         phi_12=phi_12, a_1=a_1, a_2=a_2, mass_1=mass_1, mass_2=mass_2,
-        reference_frequency=reference_frequency, phase=phase, lambdaG = lambdaG) #Not sure this should be here
+        reference_frequency=reference_frequency, phase=phase) #Not sure this should be here
 
     longitude_ascending_nodes = 0.0
     mean_per_ano = 0.0
@@ -588,9 +589,8 @@ def _base_lal_cbc_fd_waveform(
         waveform_dictionary, float(lambda_1))
     lalsim_SimInspiralWaveformParamsInsertTidalLambda2(
         waveform_dictionary, float(lambda_2))
-    lalsim.SimInspiralWaveformParamsInsertZPHMLmabdaG( #why some of them are lalsim. and others lalsim_?
-        waveform_dictionary, int(lambdaG)
-    )
+    lalsim.SimInspiralWaveformParamsInsertZPHMLambdaG( #why some of them are lalsim. and others lalsim_?
+        waveform_dictionary, int(lambdaG))
 
     for key, value in waveform_kwargs.items():
         func = getattr(lalsim, "SimInspiralWaveformParamsInsert" + key, None)

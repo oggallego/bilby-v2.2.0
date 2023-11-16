@@ -777,6 +777,14 @@ def lalsim_SimInspiralWaveformParamsInsertTidalLambda1(
 
     return SimInspiralWaveformParamsInsertTidalLambda1(
         waveform_dictionary, lambda_1)
+    
+def lalsim_SimInspiralWaveformParamsInsertZPHMLambdaG(
+        waveform_dictionary, lambdaG):
+    from lalsimulation import SimInspiralWaveformParamsInsertZPHMLambdaG
+    try:
+        lambdaG = int(lambdaG)
+    except ValueError:
+        raise ValueError("Unable to convert lambdaG to integer")
 
 
 def lalsim_SimInspiralWaveformParamsInsertTidalLambda2(
