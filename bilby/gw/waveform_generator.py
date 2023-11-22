@@ -172,7 +172,9 @@ class WaveformGenerator(object):
         if self.parameters == self._cache['parameters'] and self._cache['model'] == model and \
                 self._cache['transformed_model'] == transformed_model:
             return self._cache['waveform']
-        if 'lambdaG' in parameters: #TO CHECK
+        
+        #In branch one, but not in branch two:
+        if 'lambdaG' in parameters: 
             self.waveform_arguments['lambdaG'] = parameters['lambdaG']
         if model is not None:
             model_strain = self._strain_from_model(model_data_points, model)

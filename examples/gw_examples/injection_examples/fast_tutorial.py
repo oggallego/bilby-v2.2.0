@@ -9,6 +9,7 @@ between luminosity distances of 100Mpc and 5Gpc, the cosmology is Planck15.
 """
 
 import bilby
+import numpy as np 
 
 # Set the duration and sampling frequency of the data segment that we're
 # going to inject the signal into
@@ -17,7 +18,7 @@ sampling_frequency = 2048.0
 minimum_frequency = 20
 
 # Specify the output directory and the name of the simulation.
-outdir = "outdir"
+outdir = "outdir_nessai"
 label = "fast_tutorial"
 bilby.core.utils.setup_logger(outdir=outdir, label=label)
 
@@ -29,10 +30,10 @@ bilby.core.utils.random.seed(88170235)
 # parameters, including masses of the two black holes (mass_1, mass_2),
 # spins of both black holes (a, tilt, phi), etc.
 injection_parameters = dict(
-    mass_1=36.0,
-    mass_2=29.0,
-    a_1=0.4,
-    a_2=0.3,
+    mass_1=23.0, #masses from GW190814
+    mass_2=30.0,
+    a_1=0,# primary dimensionless spin magnitude, we have set it to 0
+    a_2=0, #secondary dimensionless spin magnitude
     tilt_1=0.5,
     tilt_2=1.0,
     phi_12=1.7,
@@ -43,12 +44,13 @@ injection_parameters = dict(
     phase=1.3,
     geocent_time=1126259642.413,
     ra=1.375,
-    dec=-1.2108,
+    dec=-1.2108, 
+    lambdaG = 1e15
 )
 
 # Fixed arguments passed into the source model
 waveform_arguments = dict(
-    waveform_approximant="IMRPhenomPv2",
+    waveform_approximant="IMRPhenomXHM", #this waveform approximant needs to be changed since it is just the original XHM
     reference_frequency=50.0,
     minimum_frequency=minimum_frequency,
 )
@@ -86,6 +88,10 @@ ifos.inject_signal(
 # distance, which means those are the parameters that will be included in the
 # sampler.  If we do nothing, then the default priors get used.
 priors = bilby.gw.prior.BBHPriorDict()
+priors['geocent_time'] = bilby.core.prior.Uniform(
+    minimum=injection_parameters['geocent_time'] - 1, #geocent_time: time at which system mergers
+    maximum=injection_parameters['geocent_time'] + 1,
+    name='geocent_time', latex_label='$t_c$', unit='$s$')
 for key in [
     "a_1",
     "a_2",
@@ -93,33 +99,50 @@ for key in [
     "tilt_2",
     "phi_12",
     "phi_jl",
+    "theta_jn", #include this to see if do not get the error with theta
     "psi",
     "ra",
     "dec",
     "geocent_time",
     "phase",
+    "lambdaG"
 ]:
     priors[key] = injection_parameters[key]
+priors['lambdaG'] = bilby.core.prior.Uniform(minimum=1e15, maximum=1e19, name='lambdaG', latex_label='$\lambda_G$')
 
 # Perform a check that the prior does not extend to a parameter space longer than the data
 priors.validate_prior(duration, minimum_frequency)
 
 # Initialise the likelihood by passing in the interferometer data (ifos) and
 # the waveform generator
+
 likelihood = bilby.gw.GravitationalWaveTransient(
     interferometers=ifos, waveform_generator=waveform_generator
-)
+) 
+#here we are not using the standard Gaussian noise likelihood (https://arxiv.org/abs/1811.02042)
+#GW transient likelihood object that computed the log-likelihod i the frequency domain (https://arxiv.org/pdf/1809.02293.pdf)
 
 # Run sampler.  In this case we're going to use the `dynesty` sampler
 result = bilby.run_sampler(
     likelihood=likelihood,
     priors=priors,
-    sampler="dynesty",
+    sampler="nessai", #branch two uses Nessai - TO CHECK
     npoints=1000,
     injection_parameters=injection_parameters,
     outdir=outdir,
     label=label,
 )
 
+lambdaG_sample = result.posterior['lambdaG']
+#print(lambdaG_sample[:10])
+lambdaG_log = np.log10(lambdaG_sample)
+print(lambdaG_log[:10])
+
+result.posterior['lambdaG'] = lambdaG_log
+print(result.posterior['lambdaG'])
+
+
 # Make a corner plot.
 result.plot_corner()
+
+

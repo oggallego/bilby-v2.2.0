@@ -777,7 +777,8 @@ def lalsim_SimInspiralWaveformParamsInsertTidalLambda1(
 
     return SimInspiralWaveformParamsInsertTidalLambda1(
         waveform_dictionary, lambda_1)
-    
+
+#In branch one, not in branch two:    
 def lalsim_SimInspiralWaveformParamsInsertZPHMLambdaG(
         waveform_dictionary, lambdaG):
     from lalsimulation import SimInspiralWaveformParamsInsertZPHMLambdaG

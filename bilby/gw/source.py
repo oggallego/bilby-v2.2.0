@@ -8,8 +8,8 @@ from .utils import (lalsim_GetApproximantFromString,
                     lalsim_SimInspiralChooseFDWaveform,
                     lalsim_SimInspiralWaveformParamsInsertTidalLambda1,
                     lalsim_SimInspiralWaveformParamsInsertTidalLambda2,
-                    lalsim_SimInspiralChooseFDWaveformSequence,
-                    lalsim_SimInspiralWaveformParamsInsertZPHMLambdaG)
+                    lalsim_SimInspiralChooseFDWaveformSequence)
+               #     lalsim_SimInspiralWaveformParamsInsertZPHMLambdaG)
 
 
 def gwsignal_binary_black_hole(frequency_array, mass_1, mass_2, luminosity_distance, a_1, tilt_1,
@@ -251,6 +251,7 @@ def gwsignal_binary_black_hole(frequency_array, mass_1, mass_2, luminosity_dista
     return dict(plus=h_plus, cross=h_cross)
 
 
+#Same as previous version of bilby from here:
 def lal_binary_black_hole(
         frequency_array, mass_1, mass_2, luminosity_distance, a_1, tilt_1,
         phi_12, a_2, tilt_2, phi_jl, theta_jn, phase, **kwargs):
@@ -485,6 +486,7 @@ def lal_eccentric_binary_black_hole_no_spins(
         eccentricity=eccentricity, **waveform_kwargs)
 
 
+#Same as in previous version from bilby:
 def _base_lal_cbc_fd_waveform(
         frequency_array, mass_1, mass_2, luminosity_distance, theta_jn, phase,
         a_1=0.0, a_2=0.0, tilt_1=0.0, tilt_2=0.0, phi_12=0.0, phi_jl=0.0,
@@ -547,9 +549,9 @@ def _base_lal_cbc_fd_waveform(
         'lal_waveform_dictionary', lal.CreateDict()
     )
     
-    if 'ZeroParameter' in waveform_kwargs:
-        waveform_dictionary['lambdaG'] = lambdaG
-        print('I have received lambda')
+    #if 'lambdaG' in waveform_kwargs:
+     #   waveform_dictionary['lambdaG'] = lambdaG
+      #  print('I have received lambda')
 
     approximant = lalsim_GetApproximantFromString(waveform_approximant)
 
@@ -572,7 +574,7 @@ def _base_lal_cbc_fd_waveform(
     iota, spin_1x, spin_1y, spin_1z, spin_2x, spin_2y, spin_2z = bilby_to_lalsimulation_spins(
         theta_jn=theta_jn, phi_jl=phi_jl, tilt_1=tilt_1, tilt_2=tilt_2,
         phi_12=phi_12, a_1=a_1, a_2=a_2, mass_1=mass_1, mass_2=mass_2,
-        reference_frequency=reference_frequency, phase=phase) #Not sure this should be here
+        reference_frequency=reference_frequency, phase=phase, lambdaG=lambdaG) #In branch one, not in branch two
 
     longitude_ascending_nodes = 0.0
     mean_per_ano = 0.0
@@ -589,8 +591,9 @@ def _base_lal_cbc_fd_waveform(
         waveform_dictionary, float(lambda_1))
     lalsim_SimInspiralWaveformParamsInsertTidalLambda2(
         waveform_dictionary, float(lambda_2))
-    lalsim.SimInspiralWaveformParamsInsertZPHMLambdaG( #why some of them are lalsim. and others lalsim_?
-        waveform_dictionary, int(lambdaG))
+    #This line in branch two, not in branch one:
+    #lalsim_SimInspiralWaveformParamsInsertZPHMLambdaG( #why some of them are lalsim. and others lalsim_?
+     #   waveform_dictionary, int(lambdaG))
 
     for key, value in waveform_kwargs.items():
         func = getattr(lalsim, "SimInspiralWaveformParamsInsert" + key, None)
