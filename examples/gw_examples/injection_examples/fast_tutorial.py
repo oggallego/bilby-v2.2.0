@@ -13,12 +13,12 @@ import numpy as np
 
 # Set the duration and sampling frequency of the data segment that we're
 # going to inject the signal into
-duration = 4.0
+duration = 6 # after error: injected signal has a duration in-band of 14.6s, but the data for detector H1 has a duration of 4.0s
 sampling_frequency = 2048.0
 minimum_frequency = 20
 
 # Specify the output directory and the name of the simulation.
-outdir = "outdir_nessai"
+outdir = "outdir_nessai_logUniform2"
 label = "fast_tutorial"
 bilby.core.utils.setup_logger(outdir=outdir, label=label)
 
@@ -31,7 +31,7 @@ bilby.core.utils.random.seed(88170235)
 # spins of both black holes (a, tilt, phi), etc.
 injection_parameters = dict(
     mass_1=23.0, #masses from GW190814
-    mass_2=30.0,
+    mass_2=10.0,
     a_1=0,# primary dimensionless spin magnitude, we have set it to 0
     a_2=0, #secondary dimensionless spin magnitude
     tilt_1=0.5,
@@ -108,7 +108,10 @@ for key in [
     "lambdaG"
 ]:
     priors[key] = injection_parameters[key]
-priors['lambdaG'] = bilby.core.prior.Uniform(minimum=1e15, maximum=1e19, name='lambdaG', latex_label='$\lambda_G$')
+#priors['lambdaG'] = bilby.core.prior.Uniform(minimum=1e15, maximum=1e19, name='lambdaG', latex_label='$\lambda_G$')
+
+#Try a logUniform prior:
+priors['lambdaG'] = bilby.core.prior.LogUniform(minimum=5, maximum=50, name='lambdaG', latex_label='$\lambda_G$')
 
 # Perform a check that the prior does not extend to a parameter space longer than the data
 priors.validate_prior(duration, minimum_frequency)
@@ -135,11 +138,11 @@ result = bilby.run_sampler(
 
 lambdaG_sample = result.posterior['lambdaG']
 #print(lambdaG_sample[:10])
-lambdaG_log = np.log10(lambdaG_sample)
-print(lambdaG_log[:10])
+#lambdaG_log = np.log10(lambdaG_sample) #I am not sure if we need this after changing the prior to log Uniform
+#print(lambdaG_log[:10])
 
-result.posterior['lambdaG'] = lambdaG_log
-print(result.posterior['lambdaG'])
+#result.posterior['lambdaG'] = lambdaG_log
+#print(result.posterior['lambdaG'])
 
 
 # Make a corner plot.
